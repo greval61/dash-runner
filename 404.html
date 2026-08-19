@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dash Runner - Arcade Game</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🎮</text></svg>">
   <style>
     * {
       margin: 0;
@@ -38,6 +37,12 @@
 </head>
 <body>
   <div id="game"></div>
+  <script>
+    // Redirigir a la raíz con el hash de la ruta actual
+    if (window.location.pathname !== '/dash-runner/') {
+      window.location.replace('/dash-runner/');
+    }
+  </script>
   <script type="module" crossorigin src="/dash-runner/assets/index-1a4b4684.js"></script>
 </body>
 </html>
