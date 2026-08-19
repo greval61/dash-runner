@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
-  base: '/dash-runner/',
+  base: './',
   root: path.resolve(__dirname, 'public'),
   server: {
     port: 3000,
