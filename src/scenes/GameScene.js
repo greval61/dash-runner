@@ -10,22 +10,18 @@ export default class GameScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
 
-    // Fondo
     this.cameras.main.setBackgroundColor(gameSettings.colors.bg);
 
-    // Inicializar variables de juego
     this.score = 0;
     this.gameOver = false;
-    this.playerLane = 1; // 0, 1, 2
+    this.playerLane = 1;
     this.gameTime = 0;
     this.difficulty = 1;
 
-    // Velocidades dinámicas
     this.obstacleSpeed = gameSettings.obstacles.baseSpeed;
     this.spawnRate = gameSettings.obstacles.spawnRate;
     this.lastSpawned = 0;
 
-    // Crear jugador
     this.player = this.add.rectangle(
       width / 2,
       height - 150,
@@ -33,52 +29,45 @@ export default class GameScene extends Phaser.Scene {
       gameSettings.player.height,
       Phaser.Display.Color.HexStringToColor(gameSettings.colors.player).color
     );
-    this.physics.add.existing(this.player, false);
 
-    // Crear grupos
-    this.obstacles = this.physics.add.group();
+    this.physics.add.existing(this.player, false);
+    this.player.body.setAllowGravity(false);
+
+    this.obstacles = this.physics.add.group({ allowGravity: false });
+
     this.particles = this.add.particles(0, 0, {
-      speed: { min: -100, max: 100 },
-      angle: { min: 240, max: 300 },
+      speed: { min: -120, max: 120 },
+      angle: { min: 220, max: 320 },
       scale: { start: 1, end: 0 },
       alpha: { start: 1, end: 0 },
-      lifespan: 600,
-      gravityY: 300
+      lifespan: 500,
+      gravityY: 200
     });
     this.particles.emitZoneSource = null;
 
-    // Controles
     this.setupControls();
 
-    // Colisiones
-    this.physics.add.overlap(
-      this.player,
-      this.obstacles,
-      this.hitObstacle,
-      null,
-      this
-    );
-
-    // UI
     this.scoreText = this.add.text(50, 50, 'Score: 0', {
       fontSize: '48px',
       fontFamily: 'Arial Black',
-      fill: gameSettings.colors.player
+      fill: gameSettings.colors.player,
+      stroke: '#000000',
+      strokeThickness: 4
     });
 
     this.difficultyText = this.add.text(width - 50, 50, 'Lvl: 1', {
       fontSize: '48px',
       fontFamily: 'Arial Black',
       fill: gameSettings.colors.obstacle,
-      align: 'right'
+      align: 'right',
+      stroke: '#000000',
+      strokeThickness: 4
     }).setOrigin(1, 0);
 
-    // Líneas de carril (visual)
     this.drawLanes();
 
-    // Sistema de dificultad
     this.time.addEvent({
-      delay: gameSettings.difficulty.interval,
+      delay: 10000,
       callback: this.increaseDifficulty,
       callbackScope: this,
       loop: true
@@ -86,7 +75,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupControls() {
-    // Teclado
     this.input.keyboard.on('keydown-LEFT', () => {
       if (this.playerLane > 0) {
         this.playerLane--;
@@ -101,19 +89,14 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
-    // Touch/Tap
     this.input.on('pointerdown', (pointer) => {
       const width = this.scale.width;
-      if (pointer.x < width / 3) {
-        if (this.playerLane > 0) {
-          this.playerLane--;
-          this.movePlayer();
-        }
-      } else if (pointer.x > (width * 2) / 3) {
-        if (this.playerLane < gameSettings.player.lanes - 1) {
-          this.playerLane++;
-          this.movePlayer();
-        }
+      if (pointer.x < width / 3 && this.playerLane > 0) {
+        this.playerLane--;
+        this.movePlayer();
+      } else if (pointer.x > (width * 2) / 3 && this.playerLane < gameSettings.player.lanes - 1) {
+        this.playerLane++;
+        this.movePlayer();
       }
     });
   }
@@ -126,7 +109,7 @@ export default class GameScene extends Phaser.Scene {
     this.tweens.add({
       targets: this.player,
       x: targetX,
-      duration: 150,
+      duration: 120,
       ease: 'Power2'
     });
   }
@@ -139,7 +122,7 @@ export default class GameScene extends Phaser.Scene {
 
     for (let i = 1; i < gameSettings.player.lanes; i++) {
       const x = startX + i * laneWidth;
-      this.add.line(0, 0, x, 0, x, height, 0x222233, 0.3);
+      this.add.line(0, 0, x, 0, x, height, 0x1b1b2d, 0.35);
     }
   }
 
@@ -150,19 +133,29 @@ export default class GameScene extends Phaser.Scene {
     this.score = Math.floor(this.gameTime / 100);
     this.scoreText.setText(`Score: ${this.score}`);
 
-    // Spawn obstáculos
     this.lastSpawned += delta;
     if (this.lastSpawned >= this.spawnRate) {
       this.spawnObstacle();
       this.lastSpawned = 0;
     }
 
-    // Remover obstáculos fuera de pantalla
-    this.obstacles.children.entries.forEach((obstacle) => {
+    for (const obstacle of this.obstacles.getChildren()) {
+      if (!obstacle) continue;
+
+      obstacle.y += (this.obstacleSpeed * delta) / 1000;
+
       if (obstacle.y > this.scale.height + 100) {
         obstacle.destroy();
+        continue;
       }
-    });
+
+      const playerBounds = this.player.getBounds();
+      const obstacleBounds = obstacle.getBounds();
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, obstacleBounds)) {
+        this.hitObstacle(this.player, obstacle);
+        break;
+      }
+    }
   }
 
   spawnObstacle() {
@@ -181,19 +174,19 @@ export default class GameScene extends Phaser.Scene {
     );
 
     this.physics.add.existing(obstacle, false);
+    obstacle.body.setAllowGravity(false);
     obstacle.body.setVelocityY(this.obstacleSpeed);
     this.obstacles.add(obstacle);
   }
 
   hitObstacle(player, obstacle) {
+    if (this.gameOver) return;
+
     this.gameOver = true;
+    this.particles.emitParticleAt(player.x, player.y, 35);
     obstacle.destroy();
 
-    // Efecto de partículas
-    this.particles.emitParticleAt(player.x, player.y, 20);
-
-    // Game Over
-    this.time.delayedCall(500, () => {
+    this.time.delayedCall(450, () => {
       this.scene.start('GameOverScene', { score: this.score });
     });
   }
@@ -203,14 +196,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.difficulty++;
     this.obstacleSpeed += gameSettings.difficulty.speedIncrement;
-    this.spawnRate = Math.max(
-      500,
-      this.spawnRate - gameSettings.difficulty.spawnRateDecrement
-    );
-
+    this.spawnRate = Math.max(500, this.spawnRate - gameSettings.difficulty.spawnRateDecrement);
     this.difficultyText.setText(`Lvl: ${this.difficulty}`);
-
-    // Efecto visual
-    this.cameras.main.flash(100, 255, 0, 0, 0.3);
+    this.cameras.main.flash(120, 255, 0, 0, 0.25);
   }
 }
