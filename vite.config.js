@@ -1,13 +1,16 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
+  root: path.resolve(__dirname, 'public'),
   server: {
     port: 3000,
     open: true
   },
   build: {
     target: 'esnext',
-    minify: 'terser',
-    outDir: 'dist'
+    minify: 'esbuild',
+    outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: true
   }
 });
