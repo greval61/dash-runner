@@ -2,6 +2,8 @@
 
 Un emocionante juego arcade tipo **endless runner** desarrollado con **Phaser 3** y **Vite**. El jugador debe esquivar obstáculos en tres carriles mientras la dificultad aumenta progresivamente.
 
+**🌐 JUEGA AHORA:** https://greval61.github.io/dash-runner/
+
 ## 🎯 Características
 
 - ✅ Diseño minimalista con colores neón
@@ -11,6 +13,7 @@ Un emocionante juego arcade tipo **endless runner** desarrollado con **Phaser 3*
 - ✅ Interfaz responsiva para móvil y desktop
 - ✅ Puntuación basada en tiempo sobrevivido
 - ✅ Efecto de partículas en colisiones
+- ✅ Totalmente funcional en web y dispositivos móviles
 
 ## 🚀 Instalación
 
@@ -20,7 +23,7 @@ Un emocionante juego arcade tipo **endless runner** desarrollado con **Phaser 3*
 ### Clonar y configurar
 
 ```bash
-git clone https://github.com/tu-usuario/dash-runner.git
+git clone https://github.com/greval61/dash-runner.git
 cd dash-runner
 npm install
 ```
@@ -55,16 +58,18 @@ npm run preview
 
 ```
 dash-runner/
+├── assets/                      → Build assets
 ├── public/
-│   └── index.html              # Archivo HTML principal
+│   └── index.html              → HTML principal
 ├── src/
-│   ├── main.js                 # Punto de entrada
-│   ├── config.js               # Configuración de Phaser y ajustes
+│   ├── main.js                 → Punto de entrada
+│   ├── config.js               → Configuración de Phaser y ajustes
 │   └── scenes/
-│       ├── BootScene.js        # Escena de carga inicial
-│       ├── MenuScene.js        # Menú principal
-│       ├── GameScene.js        # Lógica principal del juego
-│       └── GameOverScene.js    # Pantalla de fin de juego
+│       ├── BootScene.js        → Escena de carga
+│       ├── MenuScene.js        → Menú principal
+│       ├── GameScene.js        → Lógica principal del juego
+│       └── GameOverScene.js    → Pantalla de fin
+├── index.html                  → HTML compilado
 ├── package.json
 ├── vite.config.js
 ├── .gitignore
@@ -82,39 +87,55 @@ gameSettings.colors = {
   obstacle: '#ff0055',    // Obstáculos
   text: '#ffffff'         // Texto
 }
+
+gameSettings.player = {
+  width: 80,              // Ancho del jugador
+  height: 80,             // Alto del jugador
+  speed: 400,             // Velocidad de movimiento
+  lanes: 3,               // Número de carriles
+  laneWidth: 360          // Ancho de cada carril
+}
+
+gameSettings.obstacles = {
+  width: 80,              // Ancho de obstáculos
+  height: 80,             // Alto de obstáculos
+  baseSpeed: 500,         // Velocidad base
+  spawnRate: 1200         // Tasa de spawn inicial (ms)
+}
 ```
 
 ## 🌐 Desplegar en GitHub Pages
 
+El proyecto ya está desplegado en:
+**https://greval61.github.io/dash-runner/**
+
+Para desplegar tu propia versión:
+
 ### 1. Hacer push a GitHub
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/tu-usuario/dash-runner.git
-git push -u origin main
+git push origin main
 ```
 
 ### 2. Habilitar GitHub Pages
 
 - Ir a Settings → Pages
-- Seleccionar rama `main` y carpeta `/root` (o `/docs` si compilas ahí)
-- El juego estará en: `https://tu-usuario.github.io/dash-runner/`
+- Seleccionar rama `main` y carpeta `/` (raíz)
+- El juego estará disponible automáticamente
 
-### 3. (Opcional) Cambiar la carpeta de output
+## 📱 Usar en Dispositivos Móviles
 
-En `vite.config.js`:
-```javascript
-build: {
-  outDir: 'docs'
-}
+El juego es **totalmente responsivo** y funciona en cualquier dispositivo móvil:
+- iPhone, iPad
+- Android phones y tablets
+- Tablets con cualquier sistema operativo
+
+Solo abre el URL en el navegador móvil:
+```
+https://greval61.github.io/dash-runner/
 ```
 
-Luego en GitHub Pages selecciona `/docs` en lugar de `/root`.
-
-## 📱 Exportar a Móvil con Capacitor
+## 📱 Exportar a Móvil Nativo con Capacitor (Opcional)
 
 ### Instalación de Capacitor
 
@@ -149,11 +170,14 @@ npx cap open ios
 npx cap open android
 ```
 
+Luego compila en Xcode o Android Studio para generar las apps nativas.
+
 ## 🛠️ Tecnologías Usadas
 
 - **Phaser 3.55+**: Framework de juegos HTML5
-- **Vite 4.4+**: Herramienta de build moderno
+- **Vite 4.4+**: Herramienta de build moderno y rápido
 - **JavaScript ES6+**: Lenguaje principal
+- **Canvas API**: Renderizado gráfico
 
 ## 📊 Mecánicas de Juego
 
@@ -161,16 +185,19 @@ npx cap open android
 - Ancho: 80px, Alto: 80px
 - Puede moverse entre 3 carriles
 - Velocidad: 400px/s
+- Color: Azul neón (#00f0ff)
 
 ### Obstáculos
 - Aparecen desde arriba a velocidad inicial de 500px/s
 - Ancho: 80px, Alto: 80px
-- Color rosa neón
+- Color: Rosa neón (#ff0055)
+- Generados aleatoriamente en diferentes carriles
 
 ### Dificultad
 - Cada 10 segundos aumenta un nivel
 - La velocidad de obstáculos aumenta 50px/s por nivel
 - La frecuencia de spawn aumenta (reducción de 50ms por nivel)
+- El máximo spawn es de 500ms
 
 ### Puntuación
 - Se calcula como `tiempo_jugado / 100` (redondeado)
@@ -184,10 +211,12 @@ npx cap open android
 
 - [ ] Efectos de sonido
 - [ ] Múltiples tipos de obstáculos
-- [ ] Power-ups
-- [ ] Leaderboard local
+- [ ] Power-ups especiales
+- [ ] Leaderboard local (localStorage)
 - [ ] Animaciones más fluidas
 - [ ] Fondos parallax
+- [ ] Temas visuales alternativos
+- [ ] Modo multijugador
 
 ## 📄 Licencia
 
@@ -197,6 +226,9 @@ MIT - Libre para uso personal y comercial
 
 Creado con ❤️ usando Phaser 3 y Vite
 
+**Repositorio GitHub:** https://github.com/greval61/dash-runner
+
 ---
 
 **¿Disfruta jugando? ⭐ Dale una estrella en GitHub!**
+
