@@ -20,9 +20,13 @@ export const gameConfig = {
 
 export const gameSettings = {
   colors: {
+    // Keep both CSS strings for text/UI and numeric values for shape fills
     bg: '#050510',
+    bgNum: 0x050510,
     player: '#00f0ff',
+    playerNum: 0x00f0ff,
     obstacle: '#ff0055',
+    obstacleNum: 0xff0055,
     text: '#ffffff'
   },
   player: {

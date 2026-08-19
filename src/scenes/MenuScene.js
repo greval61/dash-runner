@@ -58,4 +58,11 @@ export default class MenuScene extends Phaser.Scene {
       this.scene.start('GameScene');
     });
   }
+
+  shutdown() {
+    // Limpiar listeners para evitar fugas si se vuelven a crear escenas
+    this.input.off('pointerdown');
+    this.input.keyboard.off('keydown-ENTER');
+  }
 }
+

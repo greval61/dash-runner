@@ -7,7 +7,7 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.finalScore = data.score || 0;
+    this.finalScore = (data && typeof data.score === 'number' && isFinite(data.score)) ? Math.max(0, Math.floor(data.score)) : 0;
   }
 
   create() {

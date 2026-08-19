@@ -10,8 +10,10 @@ export default class GameScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
 
+    // Background (use CSS string)
     this.cameras.main.setBackgroundColor(gameSettings.colors.bg);
 
+    // State
     this.score = 0;
     this.gameOver = false;
     this.playerLane = 1;
@@ -22,19 +24,22 @@ export default class GameScene extends Phaser.Scene {
     this.spawnRate = gameSettings.obstacles.spawnRate;
     this.lastSpawned = 0;
 
+    // Player (use numeric color for shapes)
     this.player = this.add.rectangle(
       width / 2,
       height - 150,
       gameSettings.player.width,
       gameSettings.player.height,
-      Phaser.Display.Color.HexStringToColor(gameSettings.colors.player).color
+      gameSettings.colors.playerNum
     );
-
     this.physics.add.existing(this.player, false);
     this.player.body.setAllowGravity(false);
+    this.player.body.setImmovable(true);
 
+    // Obstacles group (physics-controlled)
     this.obstacles = this.physics.add.group({ allowGravity: false });
 
+    // Particles
     this.particles = this.add.particles(0, 0, {
       speed: { min: -120, max: 120 },
       angle: { min: 220, max: 320 },
@@ -43,10 +48,14 @@ export default class GameScene extends Phaser.Scene {
       lifespan: 500,
       gravityY: 200
     });
-    this.particles.emitZoneSource = null;
 
+    // Controls
     this.setupControls();
 
+    // Collision handled by physics overlap
+    this.physics.add.overlap(this.player, this.obstacles, this.hitObstacle, null, this);
+
+    // UI texts (use CSS color strings)
     this.scoreText = this.add.text(50, 50, 'Score: 0', {
       fontSize: '48px',
       fontFamily: 'Arial Black',
@@ -64,8 +73,10 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 4
     }).setOrigin(1, 0);
 
+    // Visual lanes
     this.drawLanes();
 
+    // Difficulty timer
     this.time.addEvent({
       delay: 10000,
       callback: this.increaseDifficulty,
@@ -133,29 +144,19 @@ export default class GameScene extends Phaser.Scene {
     this.score = Math.floor(this.gameTime / 100);
     this.scoreText.setText(`Score: ${this.score}`);
 
+    // Spawn obstacles
     this.lastSpawned += delta;
     if (this.lastSpawned >= this.spawnRate) {
       this.spawnObstacle();
       this.lastSpawned = 0;
     }
 
-    for (const obstacle of this.obstacles.getChildren()) {
-      if (!obstacle) continue;
-
-      obstacle.y += (this.obstacleSpeed * delta) / 1000;
-
+    // Clean up off-screen obstacles
+    this.obstacles.children.each((obstacle) => {
       if (obstacle.y > this.scale.height + 100) {
         obstacle.destroy();
-        continue;
       }
-
-      const playerBounds = this.player.getBounds();
-      const obstacleBounds = obstacle.getBounds();
-      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, obstacleBounds)) {
-        this.hitObstacle(this.player, obstacle);
-        break;
-      }
-    }
+    }, this);
   }
 
   spawnObstacle() {
@@ -170,12 +171,13 @@ export default class GameScene extends Phaser.Scene {
       -50,
       gameSettings.obstacles.width,
       gameSettings.obstacles.height,
-      Phaser.Display.Color.HexStringToColor(gameSettings.colors.obstacle).color
+      gameSettings.colors.obstacleNum
     );
 
     this.physics.add.existing(obstacle, false);
     obstacle.body.setAllowGravity(false);
     obstacle.body.setVelocityY(this.obstacleSpeed);
+    obstacle.body.setImmovable(true);
     this.obstacles.add(obstacle);
   }
 
@@ -184,7 +186,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.gameOver = true;
     this.particles.emitParticleAt(player.x, player.y, 35);
-    obstacle.destroy();
+    if (obstacle && obstacle.destroy) obstacle.destroy();
 
     this.time.delayedCall(450, () => {
       this.scene.start('GameOverScene', { score: this.score });
