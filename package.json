@@ -1,0 +1,26 @@
+{
+  "name": "dash-runner",
+  "version": "1.0.0",
+  "description": "Dash Runner - An endless runner arcade game made with Phaser 3 and Vite",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.55.2"
+  },
+  "devDependencies": {
+    "vite": "^4.4.9"
+  },
+  "keywords": [
+    "phaser",
+    "game",
+    "arcade",
+    "endless runner",
+    "vite"
+  ],
+  "author": "",
+  "license": "MIT"
+}
