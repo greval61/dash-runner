@@ -83,6 +83,9 @@ export default class GameScene extends Phaser.Scene {
     // Visual lanes
     this.drawLanes();
 
+    // Touch controls for mobile
+    this.setupTouchControls();
+
     // Difficulty timer
     this.time.addEvent({
       delay: 10000,
@@ -116,6 +119,100 @@ export default class GameScene extends Phaser.Scene {
         this.playerLane++;
         this.movePlayer();
       }
+    });
+  }
+
+  setupTouchControls() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const buttonSize = 120;
+    const buttonY = height - 100;
+    const buttonSpacing = 200;
+
+    // Left button
+    const leftButton = this.add.rectangle(
+      width / 2 - buttonSpacing,
+      buttonY,
+      buttonSize,
+      buttonSize,
+      0x00f0ff,
+      0.5
+    );
+    leftButton.setStrokeStyle(4, 0x00f0ff);
+    
+    // Left arrow icon
+    this.add.text(
+      width / 2 - buttonSpacing,
+      buttonY,
+      '◀',
+      {
+        fontSize: '64px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      }
+    ).setOrigin(0.5);
+
+    // Right button
+    const rightButton = this.add.rectangle(
+      width / 2 + buttonSpacing,
+      buttonY,
+      buttonSize,
+      buttonSize,
+      0xff0055,
+      0.5
+    );
+    rightButton.setStrokeStyle(4, 0xff0055);
+    
+    // Right arrow icon
+    this.add.text(
+      width / 2 + buttonSpacing,
+      buttonY,
+      '▶',
+      {
+        fontSize: '64px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      }
+    ).setOrigin(0.5);
+
+    // Make buttons interactive
+    leftButton.setInteractive({ useHandCursor: true });
+    rightButton.setInteractive({ useHandCursor: true });
+
+    // Left button events
+    leftButton.on('pointerdown', () => {
+      if (this.playerLane > 0) {
+        this.playerLane--;
+        this.movePlayer();
+        leftButton.setFillStyle(0x00f0ff, 0.8);
+      }
+    });
+
+    leftButton.on('pointerup', () => {
+      leftButton.setFillStyle(0x00f0ff, 0.5);
+    });
+
+    leftButton.on('pointerout', () => {
+      leftButton.setFillStyle(0x00f0ff, 0.5);
+    });
+
+    // Right button events
+    rightButton.on('pointerdown', () => {
+      if (this.playerLane < gameSettings.player.lanes - 1) {
+        this.playerLane++;
+        this.movePlayer();
+        rightButton.setFillStyle(0xff0055, 0.8);
+      }
+    });
+
+    rightButton.on('pointerup', () => {
+      rightButton.setFillStyle(0xff0055, 0.5);
+    });
+
+    rightButton.on('pointerout', () => {
+      rightButton.setFillStyle(0xff0055, 0.5);
     });
   }
 
