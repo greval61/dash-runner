@@ -1,18 +1,18 @@
 export const gameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   width: 1080,
   height: 1920,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    parent: 'game',
-    expandParent: true
+    parent: 'game'
   },
   physics: {
     default: 'arcade',
     arcade: {
       gravity: { y: 0 },
-      debug: false
+      debug: false,
+      fps: 60
     }
   },
   scene: []
@@ -34,7 +34,7 @@ export const gameSettings = {
     height: 80,
     speed: 400,
     lanes: 3,
-    laneWidth: 360
+    laneWidth: 360 // Not used anymore with simplified positioning
   },
   obstacles: {
     width: 80,

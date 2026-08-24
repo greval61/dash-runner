@@ -25,8 +25,15 @@ export default class GameScene extends Phaser.Scene {
     this.lastSpawned = 0;
 
     // Player (use numeric color for shapes)
+    const lanePositions = [
+      width * 0.25,  // Left lane
+      width * 0.5,   // Center lane  
+      width * 0.75   // Right lane
+    ];
+    const playerX = lanePositions[this.playerLane];
+    
     this.player = this.add.rectangle(
-      width / 2,
+      playerX,
       height - 150,
       gameSettings.player.width,
       gameSettings.player.height,
@@ -114,8 +121,14 @@ export default class GameScene extends Phaser.Scene {
 
   movePlayer() {
     const width = this.scale.width;
-    const laneWidth = gameSettings.player.laneWidth;
-    const targetX = width / 2 - laneWidth + this.playerLane * laneWidth;
+    
+    // Use same simple positions as obstacles
+    const lanePositions = [
+      width * 0.25,  // Left lane
+      width * 0.5,   // Center lane  
+      width * 0.75   // Right lane
+    ];
+    const targetX = lanePositions[this.playerLane];
 
     this.tweens.add({
       targets: this.player,
@@ -128,13 +141,10 @@ export default class GameScene extends Phaser.Scene {
   drawLanes() {
     const width = this.scale.width;
     const height = this.scale.height;
-    const laneWidth = gameSettings.player.laneWidth;
-    const startX = width / 2 - laneWidth;
-
-    for (let i = 1; i < gameSettings.player.lanes; i++) {
-      const x = startX + i * laneWidth;
-      this.add.line(0, 0, x, 0, x, height, 0x1b1b2d, 0.35);
-    }
+    
+    // Simple lane dividers at 1/3 and 2/3 of screen width
+    this.add.line(0, 0, width * 0.33, 0, width * 0.33, height, 0x1b1b2d, 0.35);
+    this.add.line(0, 0, width * 0.66, 0, width * 0.66, height, 0x1b1b2d, 0.35);
   }
 
   update(time, delta) {
@@ -161,11 +171,17 @@ export default class GameScene extends Phaser.Scene {
 
   spawnObstacle() {
     const width = this.scale.width;
-    const laneWidth = gameSettings.player.laneWidth;
-    const startX = width / 2 - laneWidth;
     const randomLane = Phaser.Math.Between(0, gameSettings.player.lanes - 1);
-    const x = startX + randomLane * laneWidth;
+    
+    // Use simple fixed positions based on lane
+    const lanePositions = [
+      width * 0.25,  // Left lane
+      width * 0.5,   // Center lane  
+      width * 0.75   // Right lane
+    ];
+    const x = lanePositions[randomLane];
 
+    // Create obstacle with graphics
     const obstacle = this.add.rectangle(
       x,
       -50,
@@ -174,11 +190,14 @@ export default class GameScene extends Phaser.Scene {
       gameSettings.colors.obstacleNum
     );
 
-    this.physics.add.existing(obstacle, false);
+    // Add to physics world and group
+    this.physics.add.existing(obstacle);
+    this.obstacles.add(obstacle);
+    
+    // Configure physics body
     obstacle.body.setAllowGravity(false);
     obstacle.body.setVelocityY(this.obstacleSpeed);
     obstacle.body.setImmovable(true);
-    this.obstacles.add(obstacle);
   }
 
   hitObstacle(player, obstacle) {
