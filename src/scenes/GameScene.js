@@ -125,9 +125,12 @@ export default class GameScene extends Phaser.Scene {
   setupTouchControls() {
     const width = this.scale.width;
     const height = this.scale.height;
-    const buttonSize = 120;
-    const buttonY = height - 100;
-    const buttonSpacing = 200;
+    const buttonSize = 150;
+    const buttonY = height - 120;
+    const buttonSpacing = 250;
+
+    // Create a container for buttons to ensure they're on top
+    this.buttonContainer = this.add.container();
 
     // Left button
     const leftButton = this.add.rectangle(
@@ -136,20 +139,23 @@ export default class GameScene extends Phaser.Scene {
       buttonSize,
       buttonSize,
       0x00f0ff,
-      0.5
+      0.7
     );
-    leftButton.setStrokeStyle(4, 0x00f0ff);
+    leftButton.setStrokeStyle(6, 0x00f0ff);
+    leftButton.setInteractive({ useHandCursor: true });
     
     // Left arrow icon
-    this.add.text(
+    const leftArrow = this.add.text(
       width / 2 - buttonSpacing,
       buttonY,
       '◀',
       {
-        fontSize: '64px',
-        fontFamily: 'Arial',
+        fontSize: '80px',
+        fontFamily: 'Arial Black',
         fill: '#ffffff',
-        align: 'center'
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 4
       }
     ).setOrigin(0.5);
 
@@ -160,42 +166,45 @@ export default class GameScene extends Phaser.Scene {
       buttonSize,
       buttonSize,
       0xff0055,
-      0.5
+      0.7
     );
-    rightButton.setStrokeStyle(4, 0xff0055);
+    rightButton.setStrokeStyle(6, 0xff0055);
+    rightButton.setInteractive({ useHandCursor: true });
     
     // Right arrow icon
-    this.add.text(
+    const rightArrow = this.add.text(
       width / 2 + buttonSpacing,
       buttonY,
       '▶',
       {
-        fontSize: '64px',
-        fontFamily: 'Arial',
+        fontSize: '80px',
+        fontFamily: 'Arial Black',
         fill: '#ffffff',
-        align: 'center'
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 4
       }
     ).setOrigin(0.5);
 
-    // Make buttons interactive
-    leftButton.setInteractive({ useHandCursor: true });
-    rightButton.setInteractive({ useHandCursor: true });
+    // Add to container
+    this.buttonContainer.add([leftButton, leftArrow, rightButton, rightArrow]);
+    this.buttonContainer.setDepth(1000); // Ensure buttons are on top
 
     // Left button events
     leftButton.on('pointerdown', () => {
       if (this.playerLane > 0) {
         this.playerLane--;
         this.movePlayer();
-        leftButton.setFillStyle(0x00f0ff, 0.8);
+        leftButton.setFillStyle(0x00f0ff, 1);
       }
     });
 
     leftButton.on('pointerup', () => {
-      leftButton.setFillStyle(0x00f0ff, 0.5);
+      leftButton.setFillStyle(0x00f0ff, 0.7);
     });
 
     leftButton.on('pointerout', () => {
-      leftButton.setFillStyle(0x00f0ff, 0.5);
+      leftButton.setFillStyle(0x00f0ff, 0.7);
     });
 
     // Right button events
@@ -203,16 +212,16 @@ export default class GameScene extends Phaser.Scene {
       if (this.playerLane < gameSettings.player.lanes - 1) {
         this.playerLane++;
         this.movePlayer();
-        rightButton.setFillStyle(0xff0055, 0.8);
+        rightButton.setFillStyle(0xff0055, 1);
       }
     });
 
     rightButton.on('pointerup', () => {
-      rightButton.setFillStyle(0xff0055, 0.5);
+      rightButton.setFillStyle(0xff0055, 0.7);
     });
 
     rightButton.on('pointerout', () => {
-      rightButton.setFillStyle(0xff0055, 0.5);
+      rightButton.setFillStyle(0xff0055, 0.7);
     });
   }
 

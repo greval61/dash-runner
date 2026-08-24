@@ -33,18 +33,41 @@ export default class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Instrucciones
-    this.add.text(width / 2, height / 2 + 100, 'TAP PARA JUGAR', {
+    this.add.text(width / 2, height / 2 + 80, 'TAP PARA JUGAR', {
       fontSize: '48px',
       fontFamily: 'Arial Black, sans-serif',
       fill: gameSettings.colors.obstacle,
       align: 'center'
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, height / 2 + 200, 'Use arrow keys or tap left/right', {
+    this.add.text(width / 2, height / 2 + 160, 'CONTROLES:', {
+      fontSize: '28px',
+      fontFamily: 'Arial Black',
+      fill: gameSettings.colors.player,
+      align: 'center'
+    }).setOrigin(0.5);
+
+    this.add.text(width / 2, height / 2 + 220, '🖥️ PC: Flechas ← →', {
       fontSize: '24px',
       fontFamily: 'Arial',
       fill: gameSettings.colors.text,
-      alpha: 0.5,
+      alpha: 0.8,
+      align: 'center'
+    }).setOrigin(0.5);
+
+    this.add.text(width / 2, height / 2 + 260, '📱 Móvil: Toca izquierda/derecha', {
+      fontSize: '24px',
+      fontFamily: 'Arial',
+      fill: gameSettings.colors.text,
+      alpha: 0.8,
+      align: 'center'
+    }).setOrigin(0.5);
+
+    this.add.text(width / 2, height / 2 + 320, '¡Esquiva los obstáculos rojos!', {
+      fontSize: '22px',
+      fontFamily: 'Arial',
+      fill: gameSettings.colors.obstacle,
+      alpha: 0.6,
       align: 'center'
     }).setOrigin(0.5);
 
