@@ -16,6 +16,11 @@ export default class GameScene extends Phaser.Scene {
     // Animated star background
     this.createStarfield();
 
+    // Create game textures
+    this.createSpaceshipTexture();
+    this.createMeteoriteTexture();
+    this.createShieldPowerUpTexture();
+
     // State
     this.score = 0;
     this.gameOver = false;
@@ -29,7 +34,7 @@ export default class GameScene extends Phaser.Scene {
     this.lastSpawned = 0;
     this.lastPowerUpSpawn = 0;
 
-    // Player (use numeric color for shapes)
+    // Player (use spaceship graphic)
     const lanePositions = [
       width * 0.25,  // Left lane
       width * 0.5,   // Center lane  
@@ -37,13 +42,8 @@ export default class GameScene extends Phaser.Scene {
     ];
     const playerX = lanePositions[this.playerLane];
     
-    this.player = this.add.rectangle(
-      playerX,
-      height - 200,
-      gameSettings.player.width,
-      gameSettings.player.height,
-      gameSettings.colors.playerNum
-    );
+    this.player = this.add.sprite(playerX, height - 200, 'spaceship');
+    this.player.setScale(1.2);
     this.physics.add.existing(this.player, false);
     this.player.body.setAllowGravity(false);
     this.player.body.setImmovable(true);
@@ -102,6 +102,131 @@ export default class GameScene extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+  }
+
+  createSpaceshipTexture() {
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    
+    // Main body - futuristic triangle shape
+    graphics.fillStyle(0x00f0ff, 1);
+    graphics.beginPath();
+    graphics.moveTo(40, 0);   // Tip
+    graphics.lineTo(20, 60);  // Left bottom
+    graphics.lineTo(30, 50);  // Left inner
+    graphics.lineTo(30, 35);  // Left middle
+    graphics.lineTo(0, 40);  // Left wing tip
+    graphics.lineTo(25, 25); // Left wing connection
+    graphics.lineTo(40, 35);  // Center
+    graphics.lineTo(55, 25); // Right wing connection
+    graphics.lineTo(80, 40); // Right wing tip
+    graphics.lineTo(50, 35); // Right middle
+    graphics.lineTo(50, 50); // Right inner
+    graphics.lineTo(60, 60); // Right bottom
+    graphics.closePath();
+    graphics.fillPath();
+    
+    // Cockpit (use circle instead of ellipse)
+    graphics.fillStyle(0x00a0cc, 0.8);
+    graphics.fillCircle(40, 25, 10);
+    
+    // Engine glow
+    graphics.fillStyle(0xff6600, 0.9);
+    graphics.beginPath();
+    graphics.moveTo(30, 55);
+    graphics.lineTo(40, 75);
+    graphics.lineTo(50, 55);
+    graphics.closePath();
+    graphics.fillPath();
+    
+    // Inner engine
+    graphics.fillStyle(0xffff00, 1);
+    graphics.beginPath();
+    graphics.moveTo(35, 58);
+    graphics.lineTo(40, 70);
+    graphics.lineTo(45, 58);
+    graphics.closePath();
+    graphics.fillPath();
+    
+    // Add metallic shine
+    graphics.lineStyle(2, 0xffffff, 0.5);
+    graphics.beginPath();
+    graphics.moveTo(40, 5);
+    graphics.lineTo(40, 20);
+    graphics.strokePath();
+    
+    graphics.generateTexture('spaceship', 80, 80);
+    graphics.destroy();
+  }
+
+  createMeteoriteTexture() {
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    
+    // Main asteroid body
+    graphics.fillStyle(0x8B4513, 1);
+    graphics.beginPath();
+    graphics.moveTo(20, 10);
+    graphics.lineTo(35, 5);
+    graphics.lineTo(55, 12);
+    graphics.lineTo(70, 25);
+    graphics.lineTo(75, 40);
+    graphics.lineTo(68, 55);
+    graphics.lineTo(52, 68);
+    graphics.lineTo(35, 72);
+    graphics.lineTo(18, 65);
+    graphics.lineTo(8, 50);
+    graphics.lineTo(5, 32);
+    graphics.lineTo(12, 18);
+    graphics.closePath();
+    graphics.fillPath();
+    
+    // Craters
+    graphics.fillStyle(0x5D3A1A, 0.8);
+    graphics.fillCircle(25, 25, 8);
+    graphics.fillCircle(50, 35, 6);
+    graphics.fillCircle(35, 55, 5);
+    
+    // Highlights
+    graphics.fillStyle(0xA0522D, 0.6);
+    graphics.fillCircle(30, 20, 4);
+    graphics.fillCircle(55, 28, 3);
+    
+    // Rocky texture dots
+    graphics.fillStyle(0x4A3728, 0.7);
+    graphics.fillCircle(40, 40, 2);
+    graphics.fillCircle(20, 45, 2);
+    graphics.fillCircle(60, 50, 2);
+    graphics.fillCircle(45, 60, 2);
+    
+    graphics.generateTexture('meteorite', 80, 80);
+    graphics.destroy();
+  }
+
+  createShieldPowerUpTexture() {
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    
+    // Outer glow ring
+    graphics.fillStyle(0x00FF00, 0.3);
+    graphics.fillCircle(30, 30, 28);
+    
+    // Main shield body (semicircle using circle clipped)
+    graphics.fillStyle(0x00FF00, 0.8);
+    graphics.fillCircle(30, 30, 20);
+    
+    // Shield border
+    graphics.lineStyle(3, 0x00CC00, 1);
+    graphics.strokeCircle(30, 30, 20);
+    
+    // Inner shine
+    graphics.fillStyle(0x66FF66, 0.6);
+    graphics.fillCircle(30, 30, 12);
+    
+    // Plus symbol
+    graphics.fillStyle(0xFFFFFF, 1);
+    graphics.fillRect(27, 18, 6, 24);
+    graphics.fillRect(18, 27, 24, 6);
+    
+    graphics.generateTexture('shieldPowerUp', 60, 60);
+    graphics.destroy();
   }
 
   setupControls() {
@@ -260,6 +385,16 @@ export default class GameScene extends Phaser.Scene {
       duration: 120,
       ease: 'Power2'
     });
+
+    // Move shield circle with player if active
+    if (this.shieldCircle) {
+      this.tweens.add({
+        targets: this.shieldCircle,
+        x: targetX,
+        duration: 120,
+        ease: 'Power2'
+      });
+    }
   }
 
   drawLanes() {
@@ -328,14 +463,9 @@ export default class GameScene extends Phaser.Scene {
     ];
     const x = lanePositions[randomLane];
 
-    // Create obstacle with graphics
-    const obstacle = this.add.rectangle(
-      x,
-      -50,
-      gameSettings.obstacles.width,
-      gameSettings.obstacles.height,
-      gameSettings.colors.obstacleNum
-    );
+    // Create meteorite obstacle
+    const obstacle = this.add.sprite(x, -50, 'meteorite');
+    obstacle.setScale(1.0);
 
     // Add to physics world and group
     this.physics.add.existing(obstacle);
@@ -353,7 +483,10 @@ export default class GameScene extends Phaser.Scene {
     // If player has shield, destroy shield instead of game over
     if (this.hasShield) {
       this.hasShield = false;
-      this.player.setStrokeStyle(0); // Remove shield visual
+      if (this.shieldCircle) {
+        this.shieldCircle.destroy();
+        this.shieldCircle = null;
+      }
       this.particles.emitParticleAt(player.x, player.y, 15);
       if (obstacle && obstacle.destroy) obstacle.destroy();
       
@@ -389,19 +522,9 @@ export default class GameScene extends Phaser.Scene {
     ];
     const x = lanePositions[randomLane];
 
-    // Create shield power-up (green circle)
-    const powerUp = this.add.circle(
-      x,
-      -50,
-      gameSettings.powerUps.width / 2,
-      0x00FF00
-    );
-    
-    // Add shield icon inside
-    const shieldIcon = this.add.text(x, -50, '🛡️', {
-      fontSize: '32px',
-      align: 'center'
-    }).setOrigin(0.5);
+    // Create shield power-up with new texture
+    const powerUp = this.add.sprite(x, -50, 'shieldPowerUp');
+    powerUp.setScale(1.0);
 
     // Add to physics world and group
     this.physics.add.existing(powerUp);
@@ -411,20 +534,20 @@ export default class GameScene extends Phaser.Scene {
     powerUp.body.setAllowGravity(false);
     powerUp.body.setVelocityY(this.obstacleSpeed * 0.8); // Slower than obstacles
     powerUp.body.setImmovable(true);
-
-    // Store icon reference with power-up
-    powerUp.icon = shieldIcon;
   }
 
   collectPowerUp(player, powerUp) {
     if (this.gameOver) return;
 
-    // Activate shield
+    // Activate shield with green circle around player
     this.hasShield = true;
-    this.player.setStrokeStyle(6, 0x00FF00); // Green border for shield
+    
+    // Create shield circle around player
+    this.shieldCircle = this.add.circle(player.x, player.y, 50, 0x00FF00, 0.3);
+    this.shieldCircle.setStrokeStyle(3, 0x00FF00, 0.8);
+    this.shieldCircle.setDepth(999); // Ensure it's visible above everything
 
-    // Destroy power-up and icon
-    if (powerUp.icon) powerUp.icon.destroy();
+    // Destroy power-up
     powerUp.destroy();
 
     // Particles effect
@@ -434,7 +557,10 @@ export default class GameScene extends Phaser.Scene {
     this.time.delayedCall(gameSettings.powerUps.shieldDuration, () => {
       if (!this.gameOver) {
         this.hasShield = false;
-        this.player.setStrokeStyle(0);
+        if (this.shieldCircle) {
+          this.shieldCircle.destroy();
+          this.shieldCircle = null;
+        }
       }
     });
   }
