@@ -34,13 +34,21 @@ export const gameSettings = {
     height: 80,
     speed: 400,
     lanes: 3,
-    laneWidth: 360 // Not used anymore with simplified positioning
+    laneWidth: 360, // Not used anymore with simplified positioning
+    lives: 3
   },
   obstacles: {
     width: 80,
     height: 80,
     baseSpeed: 500,
     spawnRate: 1200
+  },
+  powerUps: {
+    width: 60,
+    height: 60,
+    spawnRate: 6000, // Spawn every 6 seconds (was 8)
+    shieldDuration: 8000, // 8 seconds of shield (was 5)
+    heartSpawnRate: 15000 // Spawn heart every 15 seconds
   },
   difficulty: {
     speedIncrement: 50,

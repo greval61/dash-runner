@@ -20,6 +20,7 @@ export default class GameScene extends Phaser.Scene {
     this.createSpaceshipTexture();
     this.createMeteoriteTexture();
     this.createShieldPowerUpTexture();
+    this.createHeartTexture();
 
     // State
     this.score = 0;
@@ -28,11 +29,14 @@ export default class GameScene extends Phaser.Scene {
     this.gameTime = 0;
     this.difficulty = 1;
     this.hasShield = false;
+    this.lives = gameSettings.player.lives;
+    this.shieldEndTime = 0; // When shield expires
 
     this.obstacleSpeed = gameSettings.obstacles.baseSpeed;
     this.spawnRate = gameSettings.obstacles.spawnRate;
     this.lastSpawned = 0;
     this.lastPowerUpSpawn = 0;
+    this.lastHeartSpawn = 0;
 
     // Player (use spaceship graphic)
     const lanePositions = [
@@ -54,6 +58,9 @@ export default class GameScene extends Phaser.Scene {
     // Power-ups group
     this.powerUps = this.physics.add.group({ allowGravity: false });
 
+    // Hearts group
+    this.hearts = this.physics.add.group({ allowGravity: false });
+
     // Particles
     this.particles = this.add.particles(0, 0, {
       speed: { min: -120, max: 120 },
@@ -70,6 +77,7 @@ export default class GameScene extends Phaser.Scene {
     // Collision handled by physics overlap
     this.physics.add.overlap(this.player, this.obstacles, this.hitObstacle, null, this);
     this.physics.add.overlap(this.player, this.powerUps, this.collectPowerUp, null, this);
+    this.physics.add.overlap(this.player, this.hearts, this.collectHeart, null, this);
 
     // UI texts (use CSS color strings)
     this.scoreText = this.add.text(50, 50, 'Score: 0', {
@@ -88,6 +96,11 @@ export default class GameScene extends Phaser.Scene {
       stroke: '#000000',
       strokeThickness: 4
     }).setOrigin(1, 0);
+
+    // Lives display
+    this.livesContainer = this.add.container(50, 120);
+    this.livesSprites = [];
+    this.updateLivesDisplay();
 
     // Visual lanes
     this.drawLanes();
@@ -227,6 +240,48 @@ export default class GameScene extends Phaser.Scene {
     
     graphics.generateTexture('shieldPowerUp', 60, 60);
     graphics.destroy();
+  }
+
+  createHeartTexture() {
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    
+    // Heart shape using two circles and a triangle
+    graphics.fillStyle(0xFF0000, 1);
+    
+    // Left circle
+    graphics.fillCircle(20, 20, 15);
+    
+    // Right circle
+    graphics.fillCircle(40, 20, 15);
+    
+    // Bottom triangle
+    graphics.beginPath();
+    graphics.moveTo(10, 25);
+    graphics.lineTo(30, 50);
+    graphics.lineTo(50, 25);
+    graphics.closePath();
+    graphics.fillPath();
+    
+    // Shine effect
+    graphics.fillStyle(0xFF6666, 0.6);
+    graphics.fillCircle(25, 15, 5);
+    
+    graphics.generateTexture('heart', 60, 60);
+    graphics.destroy();
+  }
+
+  updateLivesDisplay() {
+    // Clear existing hearts
+    this.livesSprites.forEach(heart => heart.destroy());
+    this.livesSprites = [];
+
+    // Add hearts for current lives
+    for (let i = 0; i < this.lives; i++) {
+      const heart = this.add.sprite(i * 50, 0, 'heart');
+      heart.setScale(0.8);
+      this.livesContainer.add(heart);
+      this.livesSprites.push(heart);
+    }
   }
 
   setupControls() {
@@ -413,6 +468,15 @@ export default class GameScene extends Phaser.Scene {
     this.score = Math.floor(this.gameTime / 100);
     this.scoreText.setText(`Score: ${this.score}`);
 
+    // Check if shield has expired
+    if (this.hasShield && this.gameTime >= this.shieldEndTime) {
+      this.hasShield = false;
+      if (this.shieldCircle) {
+        this.shieldCircle.destroy();
+        this.shieldCircle = null;
+      }
+    }
+
     // Animate stars
     this.stars.forEach(star => {
       star.y += star.speed * (delta / 1000);
@@ -436,6 +500,13 @@ export default class GameScene extends Phaser.Scene {
       this.lastPowerUpSpawn = 0;
     }
 
+    // Spawn hearts
+    this.lastHeartSpawn += delta;
+    if (this.lastHeartSpawn >= gameSettings.powerUps.heartSpawnRate) {
+      this.spawnHeart();
+      this.lastHeartSpawn = 0;
+    }
+
     // Clean up off-screen obstacles
     this.obstacles.children.each((obstacle) => {
       if (obstacle.y > this.scale.height + 100) {
@@ -447,6 +518,13 @@ export default class GameScene extends Phaser.Scene {
     this.powerUps.children.each((powerUp) => {
       if (powerUp.y > this.scale.height + 100) {
         powerUp.destroy();
+      }
+    }, this);
+
+    // Clean up off-screen hearts
+    this.hearts.children.each((heart) => {
+      if (heart.y > this.scale.height + 100) {
+        heart.destroy();
       }
     }, this);
   }
@@ -480,7 +558,7 @@ export default class GameScene extends Phaser.Scene {
   hitObstacle(player, obstacle) {
     if (this.gameOver) return;
 
-    // If player has shield, destroy shield instead of game over
+    // If player has shield, destroy shield instead of losing life
     if (this.hasShield) {
       this.hasShield = false;
       if (this.shieldCircle) {
@@ -495,19 +573,30 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
-    this.gameOver = true;
-    this.particles.emitParticleAt(player.x, player.y, 35);
+    // Reduce lives
+    this.lives--;
+    this.updateLivesDisplay();
+    this.particles.emitParticleAt(player.x, player.y, 20);
     if (obstacle && obstacle.destroy) obstacle.destroy();
 
-    // Save high score
-    const currentHighScore = localStorage.getItem('dashRunnerHighScore') || 0;
-    if (this.score > currentHighScore) {
-      localStorage.setItem('dashRunnerHighScore', this.score);
-    }
+    // Flash red effect
+    this.cameras.main.flash(150, 255, 0, 0, 0.6);
 
-    this.time.delayedCall(450, () => {
-      this.scene.start('GameOverScene', { score: this.score, newHighScore: this.score > currentHighScore });
-    });
+    // Check if game over
+    if (this.lives <= 0) {
+      this.gameOver = true;
+      this.particles.emitParticleAt(player.x, player.y, 35);
+
+      // Save high score
+      const currentHighScore = localStorage.getItem('dashRunnerHighScore') || 0;
+      if (this.score > currentHighScore) {
+        localStorage.setItem('dashRunnerHighScore', this.score);
+      }
+
+      this.time.delayedCall(450, () => {
+        this.scene.start('GameOverScene', { score: this.score, newHighScore: this.score > currentHighScore });
+      });
+    }
   }
 
   spawnPowerUp() {
@@ -541,28 +630,23 @@ export default class GameScene extends Phaser.Scene {
 
     // Activate shield with green circle around player
     this.hasShield = true;
+    this.shieldEndTime = this.gameTime + gameSettings.powerUps.shieldDuration;
     
-    // Create shield circle around player
-    this.shieldCircle = this.add.circle(player.x, player.y, 50, 0x00FF00, 0.3);
-    this.shieldCircle.setStrokeStyle(3, 0x00FF00, 0.8);
-    this.shieldCircle.setDepth(999); // Ensure it's visible above everything
+    // Create or update shield circle
+    if (!this.shieldCircle) {
+      this.shieldCircle = this.add.circle(player.x, player.y, 50, 0x00FF00, 0.3);
+      this.shieldCircle.setStrokeStyle(3, 0x00FF00, 0.8);
+      this.shieldCircle.setDepth(999); // Ensure it's visible above everything
+    } else {
+      // Just update position if circle already exists
+      this.shieldCircle.setPosition(player.x, player.y);
+    }
 
     // Destroy power-up
     powerUp.destroy();
 
     // Particles effect
     this.particles.emitParticleAt(player.x, player.y, 20);
-
-    // Shield expires after duration
-    this.time.delayedCall(gameSettings.powerUps.shieldDuration, () => {
-      if (!this.gameOver) {
-        this.hasShield = false;
-        if (this.shieldCircle) {
-          this.shieldCircle.destroy();
-          this.shieldCircle = null;
-        }
-      }
-    });
   }
 
   increaseDifficulty() {
@@ -573,5 +657,48 @@ export default class GameScene extends Phaser.Scene {
     this.spawnRate = Math.max(500, this.spawnRate - gameSettings.difficulty.spawnRateDecrement);
     this.difficultyText.setText(`Lvl: ${this.difficulty}`);
     this.cameras.main.flash(120, 255, 0, 0, 0.25);
+  }
+
+  spawnHeart() {
+    const width = this.scale.width;
+    const randomLane = Phaser.Math.Between(0, gameSettings.player.lanes - 1);
+    
+    // Use same lane positions as obstacles
+    const lanePositions = [
+      width * 0.25,  // Left lane
+      width * 0.5,   // Center lane  
+      width * 0.75   // Right lane
+    ];
+    const x = lanePositions[randomLane];
+
+    // Create heart power-up
+    const heart = this.add.sprite(x, -50, 'heart');
+    heart.setScale(1.0);
+    
+    // Add to physics world and group
+    this.physics.add.existing(heart);
+    this.hearts.add(heart);
+    
+    // Configure physics body
+    heart.body.setAllowGravity(false);
+    heart.body.setVelocityY(this.obstacleSpeed * 0.7); // Slower than obstacles
+    heart.body.setImmovable(true);
+  }
+
+  collectHeart(player, heart) {
+    if (this.gameOver) return;
+
+    // Add life (max 5 lives)
+    this.lives = Math.min(this.lives + 1, 5);
+    this.updateLivesDisplay();
+
+    // Destroy heart
+    heart.destroy();
+
+    // Particles effect
+    this.particles.emitParticleAt(player.x, player.y, 15);
+
+    // Flash green effect
+    this.cameras.main.flash(100, 0, 255, 0, 0.4);
   }
 }
