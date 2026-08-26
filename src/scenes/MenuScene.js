@@ -84,6 +84,29 @@ export default class MenuScene extends Phaser.Scene {
       align: 'center'
     }).setOrigin(0.5);
 
+    // Instructions button
+    const instructionsButton = this.add.text(width / 2, height / 2 + 360, '📖 INSTRUCCIONES', {
+      fontSize: '28px',
+      fontFamily: 'Arial Black',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5);
+    
+    instructionsButton.setInteractive({ useHandCursor: true });
+    instructionsButton.on('pointerdown', () => {
+      window.open('instructions.html', '_blank');
+    });
+    
+    instructionsButton.on('pointerover', () => {
+      instructionsButton.setStyle({ fill: '#FFFF00' });
+    });
+    
+    instructionsButton.on('pointerout', () => {
+      instructionsButton.setStyle({ fill: '#FFD700' });
+    });
+
     // Eventos de entrada
     this.input.on('pointerdown', () => {
       this.scene.start('GameScene');

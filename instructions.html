@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash Runner - Instrucciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #050510;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #00f0ff;
+            text-align: center;
+            border-bottom: 2px solid #ff0055;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #00f0ff;
+            margin-top: 30px;
+        }
+        .section {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #00f0ff;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .control-item {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+        .emoji {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .power-ups {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .power-up {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+        .tips {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+        .print-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background: #00f0ff;
+            color: #050510;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .print-btn:hover {
+            background: #00c0cc;
+        }
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .print-btn {
+                display: none;
+            }
+            .section, .control-item, .power-up, .tips {
+                background: white;
+                border: 1px solid #ccc;
+            }
+            h1, h2 {
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 DASH RUNNER - Instrucciones</h1>
+    
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir/Guardar como PDF</button>
+    
+    <div class="section">
+        <h2>🎯 Objetivo</h2>
+        <p>Esquiva los meteoritos rojos y sobrevive el mayor tiempo posible. Recoge power-ups para mejorar tu supervivencia.</p>
+    </div>
+    
+    <div class="section">
+        <h2>🎮 Controles</h2>
+        <div class="controls">
+            <div class="control-item">
+                <span class="emoji">🖥️</span>
+                <h3>PC</h3>
+                <p>Flechas ← → para moverte</p>
+            </div>
+            <div class="control-item">
+                <span class="emoji">📱</span>
+                <h3>Móvil</h3>
+                <p>Botones táctiles izquierda/derecha</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>⚡ Power-ups</h2>
+        <div class="power-ups">
+            <div class="power-up">
+                <span class="emoji">🛡️</span>
+                <h3>Escudo Verde</h3>
+                <p>Protección temporal contra meteoritos. Dura 8 segundos.</p>
+            </div>
+            <div class="power-up">
+                <span class="emoji">❤️</span>
+                <h3>Corazón Rojo</h3>
+                <p>Recupera una vida. Máximo 5 vidas.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>❤️ Sistema de Vidas</h2>
+        <p>Empiezas con 3 vidas. Cada choque con un meteorito te quita una vida. El juego termina cuando pierdes todas las vidas.</p>
+    </div>
+    
+    <div class="section">
+        <h2>📈 Dificultad</h2>
+        <p>El juego aumenta de dificultad cada 10 segundos: los meteoritos caen más rápido y aparecen con mayor frecuencia.</p>
+    </div>
+    
+    <div class="tips">
+        <h2>💡 Consejos</h2>
+        <ul>
+            <li>Mantente en el carril central para tener más opciones de escape</li>
+            <li>Recoge escudos verdes para sobrevivir más tiempo</li>
+            <li>Los corazones rojos son valiosos - no los dejes escapar</li>
+            <li>El escudo se renueva si recoges otro power-up verde mientras está activo</li>
+            <li>Practica el movimiento anticipado para esquivar mejor</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>🏆 Puntuación</h2>
+        <p>Tu puntuación se basa en el tiempo de supervivencia. Cuanto más tiempo aguantes, mayor será tu puntuación. ¡Intenta superar tu récord!</p>
+    </div>
+    
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir/Guardar como PDF</button>
+</body>
+</html>
